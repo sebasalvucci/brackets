@@ -32,7 +32,12 @@ define(function (require, exports, module) {
         ExtensionUtils      = brackets.getModule("utils/ExtensionUtils"),
         InlineColorEditor   = require("InlineColorEditor").InlineColorEditor,
         ColorUtils          = brackets.getModule("utils/ColorUtils");
+
+    var InlineColorEditorConstructor = InlineColorEditor;
     
+    function registerInlineColorEditorConstructor(ctor) {
+        InlineColorEditorConstructor = ctor;
+    }
     
     /**
      * Registered as an inline editor provider: creates an InlineEditorColor when the cursor
@@ -77,7 +82,7 @@ define(function (require, exports, module) {
         
         hostEditor.setSelection(pos, { line: pos.line, ch: end });
         
-        inlineColorEditor = new InlineColorEditor(match[0], startBookmark, endBookmark);
+        inlineColorEditor = new InlineColorEditorConstructor(match[0], startBookmark, endBookmark);
         inlineColorEditor.load(hostEditor);
 
         result = new $.Deferred();
@@ -91,6 +96,7 @@ define(function (require, exports, module) {
     
     EditorManager.registerInlineEditProvider(inlineColorEditorProvider);
     
+    exports.registerInlineColorEditorConstructor = registerInlineColorEditorConstructor;
     
     // for unit tests only
     exports.inlineColorEditorProvider = inlineColorEditorProvider;
