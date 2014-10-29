@@ -32,8 +32,8 @@
 define(function ScriptAgent(require, exports, module) {
     "use strict";
 
-    var Inspector = require("LiveDevelopment/Inspector/Inspector");
-    var DOMAgent = require("LiveDevelopment/Agents/DOMAgent");
+    var Inspector = require("LiveDevelopment/impls/default/Inspector/Inspector");
+    var DOMAgent = require("LiveDevelopment/impls/default/Agents/DOMAgent");
 
     var _load; // the load promise
     var _urlToScript; // url -> script info

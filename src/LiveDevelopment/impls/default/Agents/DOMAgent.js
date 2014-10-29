@@ -40,10 +40,10 @@ define(function DOMAgent(require, exports, module) {
 
     var $exports = $(exports);
 
-    var Inspector = require("LiveDevelopment/Inspector/Inspector");
-    var EditAgent = require("LiveDevelopment/Agents/EditAgent");
-    var DOMNode = require("LiveDevelopment/Agents/DOMNode");
-    var DOMHelpers = require("LiveDevelopment/Agents/DOMHelpers");
+    var Inspector = require("LiveDevelopment/impls/default/Inspector/Inspector");
+    var EditAgent = require("LiveDevelopment/impls/default/Agents/EditAgent");
+    var DOMNode = require("LiveDevelopment/impls/default/Agents/DOMNode");
+    var DOMHelpers = require("LiveDevelopment/impls/default/Agents/DOMHelpers");
 
     var _load; // {$.Deferred} load promise
     var _idToNode; // {nodeId -> node}

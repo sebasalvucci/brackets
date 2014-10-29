@@ -32,7 +32,7 @@
 define(function ConsoleAgent(require, exports, module) {
     "use strict";
 
-    var Inspector = require("LiveDevelopment/Inspector/Inspector");
+    var Inspector = require("LiveDevelopment/impls/default/Inspector/Inspector");
 
     var _lastMessage; // {Console.ConsoleMessage} the last received message
 

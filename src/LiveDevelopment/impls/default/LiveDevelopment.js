@@ -94,30 +94,30 @@ define(function LiveDevelopment(require, exports, module) {
         UserServer           = require("LiveDevelopment/Servers/UserServer").UserServer;
 
     // Inspector
-    var Inspector       = require("LiveDevelopment/Inspector/Inspector");
+    var Inspector       = require("LiveDevelopment/impls/default/Inspector/Inspector");
 
     // Documents
-    var CSSDocument     = require("LiveDevelopment/Documents/CSSDocument"),
-        CSSPreprocessorDocument = require("LiveDevelopment/Documents/CSSPreprocessorDocument"),
-        HTMLDocument    = require("LiveDevelopment/Documents/HTMLDocument"),
-        JSDocument      = require("LiveDevelopment/Documents/JSDocument");
+    var CSSDocument     = require("LiveDevelopment/impls/default/Documents/CSSDocument"),
+        CSSPreprocessorDocument = require("LiveDevelopment/impls/default/Documents/CSSPreprocessorDocument"),
+        HTMLDocument    = require("LiveDevelopment/impls/default/Documents/HTMLDocument"),
+        JSDocument      = require("LiveDevelopment/impls/default/Documents/JSDocument");
     
     // Document errors
     var SYNC_ERROR_CLASS = "live-preview-sync-error";
 
     // Agents
-    var CSSAgent = require("LiveDevelopment/Agents/CSSAgent");
+    var CSSAgent = require("LiveDevelopment/impls/default/Agents/CSSAgent");
     
     var agents = {
-        "console"   : require("LiveDevelopment/Agents/ConsoleAgent"),
-        "remote"    : require("LiveDevelopment/Agents/RemoteAgent"),
-        "network"   : require("LiveDevelopment/Agents/NetworkAgent"),
-        "dom"       : require("LiveDevelopment/Agents/DOMAgent"),
+        "console"   : require("LiveDevelopment/impls/default/Agents/ConsoleAgent"),
+        "remote"    : require("LiveDevelopment/impls/default/Agents/RemoteAgent"),
+        "network"   : require("LiveDevelopment/impls/default/Agents/NetworkAgent"),
+        "dom"       : require("LiveDevelopment/impls/default/Agents/DOMAgent"),
         "css"       : CSSAgent,
-        "script"    : require("LiveDevelopment/Agents/ScriptAgent"),
-        "highlight" : require("LiveDevelopment/Agents/HighlightAgent"),
-        "goto"      : require("LiveDevelopment/Agents/GotoAgent"),
-        "edit"      : require("LiveDevelopment/Agents/EditAgent")
+        "script"    : require("LiveDevelopment/impls/default/Agents/ScriptAgent"),
+        "highlight" : require("LiveDevelopment/impls/default/Agents/HighlightAgent"),
+        "goto"      : require("LiveDevelopment/impls/default/Agents/GotoAgent"),
+        "edit"      : require("LiveDevelopment/impls/default/Agents/EditAgent")
     };
 
     // construct path to launch.html
@@ -133,7 +133,7 @@ define(function LiveDevelopment(require, exports, module) {
     // baseUrl is configured dynamically
     launcherUrl = launcherUrl.replace("/test/SpecRunner.html", "/src/index.html");
 
-    launcherUrl = launcherUrl.substr(0, launcherUrl.lastIndexOf("/")) + "/LiveDevelopment/launch.html";
+    launcherUrl = launcherUrl.substr(0, launcherUrl.lastIndexOf("/")) + "/LiveDevelopment/impls/default/launch.html";
     launcherUrl = window.location.origin + launcherUrl;
 
     // Some agents are still experimental, so we don't enable them all by default

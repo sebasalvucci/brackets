@@ -37,9 +37,9 @@ define(function RemoteAgent(require, exports, module) {
 
     var $exports = $(exports);
 
-    var LiveDevelopment = require("LiveDevelopment/LiveDevelopment"),
-        Inspector       = require("LiveDevelopment/Inspector/Inspector"),
-        RemoteFunctions = require("text!LiveDevelopment/Agents/RemoteFunctions.js");
+    var LiveDevelopment = require("LiveDevelopment/impls/default/LiveDevelopment"),
+        Inspector       = require("LiveDevelopment/impls/default/Inspector/Inspector"),
+        RemoteFunctions = require("text!LiveDevelopment/impls/default/Agents/RemoteFunctions.js");
 
     var _load; // deferred load
     var _objectId; // the object id of the remote object

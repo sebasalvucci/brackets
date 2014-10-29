@@ -392,7 +392,7 @@ define(function Inspector(require, exports, module) {
     function init(theConfig) {
         exports.config = theConfig;
 
-        var InspectorText = require("text!LiveDevelopment/Inspector/Inspector.json"),
+        var InspectorText = require("text!LiveDevelopment/impls/default/Inspector/Inspector.json"),
             InspectorJSON = JSON.parse(InspectorText);
         
         var i, j, domain, command;

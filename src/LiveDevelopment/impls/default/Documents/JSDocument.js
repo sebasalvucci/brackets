@@ -45,9 +45,9 @@
 define(function JSDocumentModule(require, exports, module) {
     "use strict";
 
-    var Inspector = require("LiveDevelopment/Inspector/Inspector");
-    var ScriptAgent = require("LiveDevelopment/Agents/ScriptAgent");
-    var HighlightAgent = require("LiveDevelopment/Agents/HighlightAgent");
+    var Inspector = require("LiveDevelopment/impls/default/Inspector/Inspector");
+    var ScriptAgent = require("LiveDevelopment/impls/default/Agents/ScriptAgent");
+    var HighlightAgent = require("LiveDevelopment/impls/default/Agents/HighlightAgent");
 
     /**
      * @constructor

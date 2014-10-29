@@ -39,7 +39,7 @@ define(function CSSAgent(require, exports, module) {
 
     var _ = require("thirdparty/lodash");
 
-    var Inspector = require("LiveDevelopment/Inspector/Inspector");
+    var Inspector = require("LiveDevelopment/impls/default/Inspector/Inspector");
 
     /**
      * Stylesheet details
