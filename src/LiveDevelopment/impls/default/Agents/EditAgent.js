@@ -32,10 +32,10 @@
 define(function EditAgent(require, exports, module) {
     "use strict";
 
-    var Inspector = require("LiveDevelopment/Inspector/Inspector");
-    var DOMAgent = require("LiveDevelopment/Agents/DOMAgent");
-    var RemoteAgent = require("LiveDevelopment/Agents/RemoteAgent");
-    var GotoAgent = require("LiveDevelopment/Agents/GotoAgent");
+    var Inspector = require("LiveDevelopment/impls/default/Inspector/Inspector");
+    var DOMAgent = require("LiveDevelopment/impls/default/Agents/DOMAgent");
+    var RemoteAgent = require("LiveDevelopment/impls/default/Agents/RemoteAgent");
+    var GotoAgent = require("LiveDevelopment/impls/default/Agents/GotoAgent");
 
     var EditorManager = require("editor/EditorManager");
 

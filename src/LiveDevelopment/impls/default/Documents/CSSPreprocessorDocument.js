@@ -40,8 +40,8 @@ define(function CSSPreprocessorDocumentModule(require, exports, module) {
     var _               = require("thirdparty/lodash"),
         CSSUtils        = require("language/CSSUtils"),
         EditorManager   = require("editor/EditorManager"),
-        HighlightAgent  = require("LiveDevelopment/Agents/HighlightAgent"),
-        Inspector       = require("LiveDevelopment/Inspector/Inspector");
+        HighlightAgent  = require("LiveDevelopment/impls/default/Agents/HighlightAgent"),
+        Inspector       = require("LiveDevelopment/impls/default/Inspector/Inspector");
 
     /**
      * @constructor

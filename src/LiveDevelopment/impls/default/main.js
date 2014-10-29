@@ -39,8 +39,8 @@ define(function main(require, exports, module) {
     var DocumentManager     = require("document/DocumentManager"),
         Commands            = require("command/Commands"),
         AppInit             = require("utils/AppInit"),
-        LiveDevelopment     = require("LiveDevelopment/LiveDevelopment"),
-        Inspector           = require("LiveDevelopment/Inspector/Inspector"),
+        LiveDevelopment     = require("LiveDevelopment/impls/default/LiveDevelopment"),
+        Inspector           = require("LiveDevelopment/impls/default/Inspector/Inspector"),
         CommandManager      = require("command/CommandManager"),
         PreferencesManager  = require("preferences/PreferencesManager"),
         Dialogs             = require("widgets/Dialogs"),
@@ -82,7 +82,7 @@ define(function main(require, exports, module) {
 
     /** Load Live Development LESS Style */
     function _loadStyles() {
-        var lessText    = require("text!LiveDevelopment/main.less"),
+        var lessText    = require("text!LiveDevelopment/impls/default/main.less"),
             parser      = new less.Parser();
         
         parser.parse(lessText, function onParse(err, tree) {

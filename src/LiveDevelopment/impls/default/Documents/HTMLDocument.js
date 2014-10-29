@@ -45,12 +45,12 @@ define(function HTMLDocumentModule(require, exports, module) {
     "use strict";
 
     var EditorManager       = require("editor/EditorManager"),
-        HighlightAgent      = require("LiveDevelopment/Agents/HighlightAgent"),
+        HighlightAgent      = require("LiveDevelopment/impls/default/Agents/HighlightAgent"),
         HTMLInstrumentation = require("language/HTMLInstrumentation"),
-        Inspector           = require("LiveDevelopment/Inspector/Inspector"),
-        LiveDevelopment     = require("LiveDevelopment/LiveDevelopment"),
+        Inspector           = require("LiveDevelopment/impls/default/Inspector/Inspector"),
+        LiveDevelopment     = require("LiveDevelopment/impls/default/LiveDevelopment"),
         PerfUtils           = require("utils/PerfUtils"),
-        RemoteAgent         = require("LiveDevelopment/Agents/RemoteAgent"),
+        RemoteAgent         = require("LiveDevelopment/impls/default/Agents/RemoteAgent"),
         _                   = require("thirdparty/lodash");
 
     /**
