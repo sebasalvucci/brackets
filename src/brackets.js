@@ -103,7 +103,7 @@ define(function (require, exports, module) {
     require("file/FileUtils");
     require("project/SidebarView");
     require("utils/Resizer");
-    require("LiveDevelopment/impls/default/main");
+    require("LiveDevelopment/main");
     require("utils/NodeConnection");
     require("utils/NodeDomain");
     require("utils/ColorUtils");
