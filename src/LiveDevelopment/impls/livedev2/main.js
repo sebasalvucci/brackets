@@ -189,7 +189,7 @@ define(function main(require, exports, module) {
     }
     
     /** Initialize LiveDevelopment */
-    AppInit.appReady(function () {
+    function init() {
         params.parse();
 
         LiveDevelopment.init();
@@ -197,7 +197,7 @@ define(function main(require, exports, module) {
         _setupGoLiveMenu();
 
         _updateHighlightCheckmark();
-    });
+    }
     
     // init prefs
     PreferencesManager.stateManager.definePreference("file.previewHighlight", "boolean", true)
@@ -215,4 +215,7 @@ define(function main(require, exports, module) {
     //Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem("livedev2.live-highlight");
     
     ExtensionUtils.loadStyleSheet(module, "styles/styles.css");
+    
+    // Export public functions
+    exports.init = init;
 });

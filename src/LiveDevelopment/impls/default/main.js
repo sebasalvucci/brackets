@@ -232,7 +232,7 @@ define(function main(require, exports, module) {
     }
 
     /** Initialize LiveDevelopment */
-    AppInit.appReady(function () {
+    function init() {
         params.parse();
 
         Inspector.init(config);
@@ -261,7 +261,7 @@ define(function main(require, exports, module) {
                 LiveDevelopment.redrawHighlight();
             }
         });
-    });
+    }
     
     // init prefs
     PreferencesManager.stateManager.definePreference("livedev.highlight", "boolean", true)
@@ -284,4 +284,5 @@ define(function main(require, exports, module) {
     CommandManager.get(Commands.FILE_LIVE_HIGHLIGHT).setEnabled(false);
 
     // Export public functions
+    exports.init = init;
 });
