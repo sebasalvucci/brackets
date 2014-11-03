@@ -396,7 +396,7 @@ define(function (require, exports, module) {
                 expectEquivalent("node_*", "**node_***");
                 expectEquivalent("node_?", "**node_?**");
                 expectEquivalent("*-test-files/", "***-test-files/**");
-                expectEquivalent("LiveDevelopment/**/Inspector", "**LiveDevelopment/**/Inspector**");
+                expectEquivalent("LiveDevelopment/impls/default/**/Inspector", "**LiveDevelopment/impls/default/**/Inspector**");
             });
 
             it("shouldn't add ** suffix", function () {
