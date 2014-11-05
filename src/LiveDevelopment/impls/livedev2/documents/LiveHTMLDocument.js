@@ -180,42 +180,7 @@ define(function (require, exports, module) {
      * @param {Object} change CodeMirror editor change data
      */
     LiveHTMLDocument.prototype._compareWithBrowser = function (change) {
-        var self = this;
-        
-        // TODO: evaluate in browser
-//        RemoteAgent.call("getSimpleDOM").done(function (res) {
-//            var browserSimpleDOM = JSON.parse(res.result.value),
-//                edits,
-//                node,
-//                result;
-//            
-//            try {
-//                result = HTMLInstrumentation._getBrowserDiff(self.editor, browserSimpleDOM);
-//            } catch (err) {
-//                console.error("Error comparing in-browser DOM to in-editor DOM");
-//                console.error(err.stack);
-//                return;
-//            }
-//            
-//            edits = result.diff.filter(function (delta) {
-//                // ignore textDelete in html root element
-//                node = result.browser.nodeMap[delta.parentID];
-//                
-//                if (node && node.tag === "html" && delta.type === "textDelete") {
-//                    return false;
-//                }
-//                
-//                return true;
-//            });
-//            
-//            if (edits.length > 0) {
-//                console.warn("Browser DOM does not match after change: " + JSON.stringify(change));
-//                
-//                edits.forEach(function (delta) {
-//                    console.log(delta);
-//                });
-//            }
-//        });
+        // TODO: Not implemented.
     };
 
     /**

@@ -48,10 +48,12 @@
  *
  * -1: Error
  *  0: Inactive
- *  1: Connecting to the remote debugger
- *  2: Loading agents
- *  3: Active
- *  4: Out of sync
+ *  1: Connecting (waiting for a browser connection)
+ *  2: Active
+ *  3: Out of sync
+ *  4: Sync error
+ *  5: Reloading (JS changes)
+ *  6: Restarting (switching context to a new HTML live doc)
  *
  * The reason codes are:
  * - null (Unknown reason)
@@ -104,7 +106,6 @@ define(function (require, exports, module) {
      * @private
      * Live documents related to the active HTML document - for example, CSS files
      * that are used by the document.
-     * TODO: this is not yet maintained in the new architecture - will need to be reimplemented.
      * @type {Object.<string: {LiveHTMLDocument|LiveCSSDocument}>}
      */
     var _relatedDocuments = {};
@@ -325,8 +326,6 @@ define(function (require, exports, module) {
      * Handles a notification from the browser that a stylesheet was loaded into
      * the live HTML document. If the stylesheet maps to a file in the project, then
      * creates a live document for the stylesheet and adds it to _relatedDocuments.
-     * TODO: this isn't implemented in the prototype yet. We'll need to implement
-     * this notification on the browser side.
      * @param {$.Event} event
      * @param {string} url The URL of the stylesheet that was added.
      * @param {array} roots The URLs of the roots of the stylesheet (the css files loaded through <link>)
@@ -514,8 +513,7 @@ define(function (require, exports, module) {
     }
 
     /**
-     * Close the connection and the associated window asynchronously
-     * @return {jQuery.Promise} Resolves once the connection is closed
+     * Close all active connections
      */
     function close() {
         return _close(true);
@@ -803,24 +801,6 @@ define(function (require, exports, module) {
         }
     }
 
-    // TODO: These aren't necessary in the prototype because they're related to servers that are
-    // registered by the original LiveDevelopment feature when it starts up.
-//    function getCurrentProjectServerConfig() {
-//        return {
-//            baseUrl: ProjectManager.getBaseUrl(),
-//            pathResolver: ProjectManager.makeProjectRelativeIfPossible,
-//            root: ProjectManager.getProjectRoot().fullPath
-//        };
-//    }
-//    
-//    function _createUserServer() {
-//        return new UserServer(getCurrentProjectServerConfig());
-//    }
-//    
-//    function _createFileServer() {
-//        return new FileServer(getCurrentProjectServerConfig());
-//    }
-
     /**
      * Sets the current transport mechanism to be used by the live development protocol
      * (e.g. socket server, iframe postMessage, etc.)
@@ -857,11 +837,6 @@ define(function (require, exports, module) {
             .on("documentSaved", _onDocumentSaved)
             .on("dirtyFlagChange", _onDirtyFlagChange);
         $(ProjectManager).on("beforeProjectClose beforeAppClose", close);
-        
-        // Register user defined server provider
-        // TODO: main LiveDevelopment does this already, so we don't want to do it again here.
-//        LiveDevServerManager.registerServer({ create: _createUserServer }, 99);
-//        LiveDevServerManager.registerServer({ create: _createFileServer }, 0);
         
         // Default transport for live connection messages - can be changed
         setTransport(NodeSocketTransport);
@@ -905,7 +880,6 @@ define(function (require, exports, module) {
     exports.getLiveDocForPath   = getLiveDocForPath;
     exports.init                = init;
     exports.isActive            = isActive;
-//    exports.getCurrentProjectServerConfig = getCurrentProjectServerConfig;
     exports.getServerBaseUrl    = getServerBaseUrl;
     exports.setTransport        = setTransport;
 });

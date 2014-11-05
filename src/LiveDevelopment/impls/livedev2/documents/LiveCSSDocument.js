@@ -77,35 +77,6 @@ define(function LiveCSSDocumentModule(require, exports, module) {
     LiveCSSDocument.prototype = Object.create(LiveDocument.prototype);
     LiveCSSDocument.prototype.constructor = LiveCSSDocument;
     LiveCSSDocument.prototype.parentClass = LiveDocument.prototype;
-
-    /**
-     * @private
-     * Returns information about the associated style block in the browser, including a
-     * unique ID.
-     */
-    LiveCSSDocument.prototype._getStyleSheetHeader = function () {
-        // TODO Need to add protocol API for getting a stylesheet ID, or
-        // decide to just refer to them by URL.
-        //return CSSAgent.styleForURL(this.doc.url);
-    };
-
-    /**
-     * Get the browser version of the source
-     * @return {jQuery.promise} Promise resolved with the text content of this CSS document
-     */
-    LiveCSSDocument.prototype.getSourceFromBrowser = function () {
-                // TODO: Only used for unit testing. Need to add protocol API to extract stylesheet from browser side.
-//        var deferred = new $.Deferred(),
-//            styleSheetId = this._getStyleSheetHeader().styleSheetId,
-//            inspectorPromise = Inspector.CSS.getStyleSheetText(styleSheetId);
-//        
-//        inspectorPromise.then(function (res) {
-//            deferred.resolve(res.text);
-//        }, deferred.reject);
-//        
-//        return deferred.promise();
-
-    };
  
     /**
      * @override

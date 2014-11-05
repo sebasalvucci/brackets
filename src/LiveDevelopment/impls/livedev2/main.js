@@ -175,7 +175,6 @@ define(function main(require, exports, module) {
         $(LiveDevelopment).on("statusChange", function statusChange(event, status) {
             // Update the checkmark next to 'Live Preview' menu item
             // Add checkmark when status is STATUS_ACTIVE; otherwise remove it
-            //CommandManager.get("livedev2.live-preview").setChecked(status === LiveDevelopment.STATUS_ACTIVE);
             CommandManager.get("file.previewHighlight").setEnabled(status === LiveDevelopment.STATUS_INACTIVE);
         });
     }
@@ -208,13 +207,7 @@ define(function main(require, exports, module) {
     // init commands
     CommandManager.register(Strings.CMD_LIVE_FILE_PREVIEW,  Commands.FILE_LIVE_FILE_PREVIEW, _handleGoLiveCommand);
     CommandManager.register(Strings.CMD_LIVE_HIGHLIGHT, Commands.FILE_LIVE_HIGHLIGHT, _handlePreviewHighlightCommand);
-    //CommandManager.register(Strings.CMD_RELOAD_LIVE_PREVIEW, Commands.CMD_RELOAD_LIVE_PREVIEW, _handleReloadLivePreviewCommand);
     CommandManager.get(Commands.FILE_LIVE_HIGHLIGHT).setEnabled(false);
-
-    //Menus.getMenu(Menus.AppMenuBar.FILE_MENU).addMenuItem("livedev2.live-preview");
-    //Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem("livedev2.live-highlight");
-    
-    ExtensionUtils.loadStyleSheet(module, "styles/styles.css");
     
     // Export public functions
     exports.init = init;

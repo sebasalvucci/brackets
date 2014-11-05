@@ -92,6 +92,7 @@ define(function (require, exports, module) {
      * If the message has an `id` field, it's assumed to be a response to a previous
      * request, and will be passed along to the original promise returned by `_send()`.
      * Otherwise, it's treated as an event and dispatched.
+     * TODO: we should probably have a way of returning the results from all clients, not just the first?
      *
      * @param {number} clientId ID of the client that sent the message
      * @param {string} msg The message that was sent, in JSON string format
@@ -239,7 +240,6 @@ define(function (require, exports, module) {
      * @param {string} script The script to evalute.
      * @return {$.Promise} A promise that's resolved with the return value from the first client that responds
      *      to the evaluation.
-     * TODO: we should probably have a way of returning the results from all clients, not just the first?
      */
     function evaluate(script, clients) {
         return _send(
@@ -259,7 +259,6 @@ define(function (require, exports, module) {
      * @param {boolean} ignoreCache If true, browser cache is ignored.
      * @return {$.Promise} A promise that's resolved with the return value from the first client that responds
      *      to the method.
-     * TODO: we should probably have a way of returning the results from all clients, not just the first?
      */
     function reload(ignoreCache, clients) {
         return _send(
@@ -306,7 +305,6 @@ define(function (require, exports, module) {
         });
         _connections = {};
     }
-    
     
     // public API
     exports.setTransport = setTransport;
