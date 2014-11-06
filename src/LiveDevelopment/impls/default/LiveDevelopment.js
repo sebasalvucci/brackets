@@ -94,13 +94,13 @@ define(function LiveDevelopment(require, exports, module) {
         UserServer           = require("LiveDevelopment/Servers/UserServer").UserServer;
 
     // Inspector
-    var Inspector       = require("LiveDevelopment/impls/default/Inspector/Inspector");
+    var Inspector            = require("LiveDevelopment/impls/default/Inspector/Inspector");
 
     // Documents
-    var CSSDocument     = require("LiveDevelopment/impls/default/Documents/CSSDocument"),
+    var CSSDocument             = require("LiveDevelopment/impls/default/Documents/CSSDocument"),
         CSSPreprocessorDocument = require("LiveDevelopment/impls/default/Documents/CSSPreprocessorDocument"),
-        HTMLDocument    = require("LiveDevelopment/impls/default/Documents/HTMLDocument"),
-        JSDocument      = require("LiveDevelopment/impls/default/Documents/JSDocument");
+        HTMLDocument            = require("LiveDevelopment/impls/default/Documents/HTMLDocument"),
+        JSDocument              = require("LiveDevelopment/impls/default/Documents/JSDocument");
     
     // Document errors
     var SYNC_ERROR_CLASS = "live-preview-sync-error";

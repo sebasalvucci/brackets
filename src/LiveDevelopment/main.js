@@ -40,29 +40,45 @@
 define(function main(require, exports, module) {
     "use strict";
     
-    var AppInit             = require("utils/AppInit"),
-        PreferencesManager  = require("preferences/PreferencesManager");
+    // preference to set the implementation to be loaded
+    var LIVEDEV_IMPL_PREF  = 'livedev.impl';
         
-    // pre-loaded implementations
-    var liveDevImpls = {
-            'default'  : require("LiveDevelopment/impls/default/main"),
-            'livedev2' : require("LiveDevelopment/impls/livedev2/main")
-        };
+    // pre-defined implementations
+    var DEFAULT_IMPL       = 'default',
+        LIVEDEV2_IMPL      = 'livedev2';
     
-    // current active implementation
+    var AppInit            = require("utils/AppInit"),
+        PreferencesManager = require("preferences/PreferencesManager");
+    
+    /**
+     * current active implementation
+     */
     var LiveDevelopment;
+        
+    // pre-load implementations
+    var liveDevImpls = {};
+    liveDevImpls[DEFAULT_IMPL]  = require("LiveDevelopment/impls/default/main");
+    liveDevImpls[LIVEDEV2_IMPL] = require("LiveDevelopment/impls/livedev2/main");
+    
+    // define livedev.impl preference
+    PreferencesManager.definePreference(LIVEDEV_IMPL_PREF, 'string', 'default');
 
     /** Initialize LiveDevelopment */
     AppInit.appReady(function () {
-        PreferencesManager.definePreference('livedev.impl', 'string', 'default');
+        
         // get choose LiveDevelopment implementation based on preference value
-        LiveDevelopment = liveDevImpls[PreferencesManager.get('livedev.impl')];
+        LiveDevelopment = liveDevImpls[PreferencesManager.get(LIVEDEV_IMPL_PREF)];
         if (!LiveDevelopment) {
             // preference value doesn't match any implementation, switching to 'default'
             console.log("invalid livedev.impl value - switching to default implemenation");
-            LiveDevelopment = liveDevImpls['default'];
+            LiveDevelopment = liveDevImpls[DEFAULT_IMPL];
         }
         // init
         LiveDevelopment.init();
     });
+    
+    // exports public API
+    exports.LIVEDEV_IMPL_PREF = LIVEDEV_IMPL_PREF;
+    exports.DEFAULT_IMPL      = DEFAULT_IMPL;
+    exports.LIVEDEV2_IMPL     = LIVEDEV2_IMPL;
 });

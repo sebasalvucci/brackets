@@ -66,14 +66,14 @@ define(function (require, exports, module) {
     "use strict";
 
     // Status Codes
-    var STATUS_ERROR          = exports.STATUS_ERROR          = -1;
-    var STATUS_INACTIVE       = exports.STATUS_INACTIVE       =  0;
-    var STATUS_CONNECTING     = exports.STATUS_CONNECTING     =  1;
-    var STATUS_ACTIVE         = exports.STATUS_ACTIVE         =  2;
-    var STATUS_OUT_OF_SYNC    = exports.STATUS_OUT_OF_SYNC    =  3;
-    var STATUS_SYNC_ERROR     = exports.STATUS_SYNC_ERROR     =  4;
-    var STATUS_RELOADING      = exports.STATUS_RELOADING      =  5;
-    var STATUS_RESTARTING     = exports.STATUS_RESTARTING     =  6;
+    var STATUS_ERROR         = exports.STATUS_ERROR          = -1;
+    var STATUS_INACTIVE      = exports.STATUS_INACTIVE       =  0;
+    var STATUS_CONNECTING    = exports.STATUS_CONNECTING     =  1;
+    var STATUS_ACTIVE        = exports.STATUS_ACTIVE         =  2;
+    var STATUS_OUT_OF_SYNC   = exports.STATUS_OUT_OF_SYNC    =  3;
+    var STATUS_SYNC_ERROR    = exports.STATUS_SYNC_ERROR     =  4;
+    var STATUS_RELOADING     = exports.STATUS_RELOADING      =  5;
+    var STATUS_RESTARTING    = exports.STATUS_RESTARTING     =  6;
 
     var Async                = require("utils/Async"),
         Dialogs              = require("widgets/Dialogs"),
@@ -92,8 +92,8 @@ define(function (require, exports, module) {
         LiveDevProtocol      = require("LiveDevelopment/impls/livedev2/protocol/LiveDevProtocol");
     
     // Documents
-    var LiveCSSDocument     = require("LiveDevelopment/impls/livedev2/documents/LiveCSSDocument"),
-        LiveHTMLDocument    = require("LiveDevelopment/impls/livedev2/documents/LiveHTMLDocument");
+    var LiveCSSDocument      = require("LiveDevelopment/impls/livedev2/documents/LiveCSSDocument"),
+        LiveHTMLDocument     = require("LiveDevelopment/impls/livedev2/documents/LiveHTMLDocument");
     
     /** 
      * @private
@@ -143,17 +143,6 @@ define(function (require, exports, module) {
 
     /** 
      * @private
-     * Get the current active document from the document manager.
-     * TODO: might no longer be necessary - there used to be more stuff in here but I think it was
-     * removed awhile ago.
-     * @return {?Document} The currently active document, or null for no document.
-     */
-    function _getCurrentDocument() {
-        return DocumentManager.getCurrentDocument();
-    }
-
-    /** 
-     * @private
      * Determine which live document class should be used for a given document
      * @param {Document} document The document we want to create a live document for.
      * @return {function} The constructor for the live document class; will be a subclass of LiveDocument.
@@ -185,7 +174,7 @@ define(function (require, exports, module) {
      */
     function getLiveDocForPath(path) {
         if (!_server) {
-            return undefined;
+            return null;
         }
         
         return _server.get(path);
@@ -217,8 +206,7 @@ define(function (require, exports, module) {
      * Removes the given CSS/JSDocument from _relatedDocuments. Signals that the
      * given file is no longer associated with the HTML document that is live (e.g.
      * if the related file has been deleted on disk).
-     * @param {$.Event} event
-     * @param {LiveDocument} liveDoc
+     * @param {string} url Absolute URL of the related document
      */
     function _handleRelatedDocumentDeleted(url) {
         var liveDoc = _relatedDocuments[url];
@@ -229,7 +217,6 @@ define(function (require, exports, module) {
         if (_server) {
             _server.remove(liveDoc);
         }
-        
         _closeDocument(liveDoc);
     }
 
@@ -292,12 +279,14 @@ define(function (require, exports, module) {
      * @return {?LiveDocument} The live document, or null if this type of file doesn't support live editing.
      */
     function _createLiveDocument(doc, editor, roots) {
-        var DocClass        = _classForDocument(doc),
-            liveDocument    = new DocClass(_protocol, _resolveUrl, doc, editor, roots);
-
+        var DocClass = _classForDocument(doc),
+            liveDocument;
+        
         if (!DocClass) {
             return null;
         }
+        
+        liveDocument = new DocClass(_protocol, _resolveUrl, doc, editor, roots);
 
         $(liveDocument).on("errorStatusChanged.livedev", function (event, hasErrors) {
             if (isActive()) {
@@ -315,8 +304,7 @@ define(function (require, exports, module) {
      * @return {boolean}
      */
     function _docIsOutOfSync(doc) {
-        var docClass    = _classForDocument(doc),
-            liveDoc     = _server && _server.get(doc.file.fullPath),
+        var liveDoc = _server && _server.get(doc.file.fullPath),
             isLiveEditingEnabled = liveDoc && liveDoc.isLiveEditingEnabled();
 
         return doc.isDirty && !isLiveEditingEnabled;
@@ -394,19 +382,9 @@ define(function (require, exports, module) {
      * file.
      */
     function _getInitialDocFromCurrent() {
-        var doc = _getCurrentDocument(),
+        var doc = DocumentManager.getCurrentDocument(),
             refPath,
             i;
-
-        // TODO: FileUtils.getParentFolder()
-        function getParentFolder(path) {
-            return path.substring(0, path.lastIndexOf('/', path.length - 2) + 1);
-        }
-
-        function getFilenameWithoutExtension(filename) {
-            var index = filename.lastIndexOf(".");
-            return index === -1 ? filename : filename.slice(0, index);
-        }
 
         // Is the currently opened document already a file we can use for Live Development?
         if (doc) {
@@ -434,14 +412,14 @@ define(function (require, exports, module) {
             }
             
             var filteredFiltered = allFiles.filter(function (item) {
-                var parent = getParentFolder(item.fullPath);
+                var parent = FileUtils.getDirectoryPath(item.fullPath);
                 
                 return (containingFolder.indexOf(parent) === 0);
             });
             
             var filterIndexFile = function (fileInfo) {
                 if (fileInfo.fullPath.indexOf(containingFolder) === 0) {
-                    if (getFilenameWithoutExtension(fileInfo.name) === "index") {
+                    if (FileUtils.getFilenameWithoutExtension(fileInfo.name) === "index") {
                         if (hasOwnServerForLiveDevelopment) {
                             if ((FileUtils.isServerHtmlFileExt(fileInfo.name)) ||
                                     (FileUtils.isStaticHtmlFileExt(fileInfo.name))) {
@@ -462,7 +440,7 @@ define(function (require, exports, module) {
                 // We found no good match
                 if (i === -1) {
                     // traverse the directory tree up one level
-                    containingFolder = getParentFolder(containingFolder);
+                    containingFolder = FileUtils.getDirectoryPath(containingFolder);
                     // Are we still inside the project?
                     if (containingFolder.indexOf(projectRoot) === -1) {
                         stillInProjectTree = false;
@@ -580,7 +558,7 @@ define(function (require, exports, module) {
                     .on("Connection.connect.livedev", function (event, msg) {
                         // check for the first connection
                         if (_protocol.getConnectionIds().length === 1) {
-                            var doc = _getCurrentDocument();
+                            var doc = DocumentManager.getCurrentDocument();
                             // check the page that connection comes from matches the current live document session
                             if (_liveDocument && (msg.url === _resolveUrl(_liveDocument.doc.file.fullPath))) {
                                 _setStatus(STATUS_ACTIVE);
@@ -694,10 +672,9 @@ define(function (require, exports, module) {
     /**
      * @private
      * When switching documents, close the current preview and open a new one.
-     * TODO: closing the current preview doesn't actually work in the new architecture.
      */
     function _onDocumentChange() {
-        var doc = _getCurrentDocument();
+        var doc = DocumentManager.getCurrentDocument();
         if (!isActive() || !doc) {
             return;
         }
@@ -709,7 +686,6 @@ define(function (require, exports, module) {
         if (_liveDocument.doc.url !== docUrl && isViewable) {
             // clear live doc and related docs
             _closeDocuments();
-
             // create new live doc
             _createLiveDocumentForFrame(doc);
             _setStatus(STATUS_RESTARTING);
@@ -753,7 +729,6 @@ define(function (require, exports, module) {
     /**
      * For files that don't support as-you-type live editing, but are loaded by live HTML documents
      * (e.g. JS files), we want to reload the full document when they're saved.
-     * TODO: not implemented, see below.
      * @param {$.Event} event
      * @param {Document} doc
      */
@@ -847,16 +822,6 @@ define(function (require, exports, module) {
 
     /**
      * @private
-     * Returns the current server being used to serve the active live document. Will be null
-     * if there is no active live document.
-     * @return {?BaseServer}
-     */
-    function _getServer() {
-        return _server;
-    }
-
-    /**
-     * @private
      * Returns the base URL of the current server serving the active live document, or null if
      * there is no active live document.
      * @return {?string}
@@ -865,14 +830,10 @@ define(function (require, exports, module) {
         return _server && _server.getBaseUrl();
     }
     
-    function _getCurrentLiveDoc() {
-        return _liveDocument;
-    }
-    
     // For unit testing
-    exports._getServer                = _getServer;
+    exports._server                   = _server;
+    exports._liveDocument             = _liveDocument;
     exports._getInitialDocFromCurrent = _getInitialDocFromCurrent;
-    exports._getCurrentLiveDoc        = _getCurrentLiveDoc;
 
     // Export public functions
     exports.open                = open;
