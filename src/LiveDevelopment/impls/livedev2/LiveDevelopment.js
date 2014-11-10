@@ -40,7 +40,6 @@
  *
  * # STATUS
  *
- * (TODO: some of these are likely obsolete in the new architecture)
  * Status updates are dispatched as `statusChange` jQuery events. The status
  * is passed as the first parameter and the reason for the change as the second
  * parameter. Currently only the "Inactive" status supports the reason parameter.
@@ -52,7 +51,7 @@
  *  2: Active
  *  3: Out of sync
  *  4: Sync error
- *  5: Reloading (JS changes)
+ *  5: Reloading (after saving JS changes)
  *  6: Restarting (switching context to a new HTML live doc)
  *
  * The reason codes are:
@@ -60,7 +59,6 @@
  * - "explicit_close" (LiveDevelopment.close() was called)
  * - "navigated_away" (The browser changed to a location outside of the project)
  * - "detached_target_closed" (The tab or window was closed)
- * - "detached_replaced_with_devtools" (The developer tools were opened in the browser)
  */
 define(function (require, exports, module) {
     "use strict";
@@ -569,7 +567,7 @@ define(function (require, exports, module) {
                         // close session when the last connection was closed
                         if (_protocol.getConnectionIds().length === 0) {
                             if (exports.status <= STATUS_ACTIVE) {
-                                close("detached_target_closed");
+                                _close(false, "detached_target_closed");
                             }
                         }
                     })
