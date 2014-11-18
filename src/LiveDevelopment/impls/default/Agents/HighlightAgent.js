@@ -34,10 +34,10 @@
 define(function HighlightAgent(require, exports, module) {
     "use strict";
 
-    var DOMAgent        = require("LiveDevelopment/Agents/DOMAgent"),
-        Inspector       = require("LiveDevelopment/Inspector/Inspector"),
-        LiveDevelopment = require("LiveDevelopment/LiveDevelopment"),
-        RemoteAgent     = require("LiveDevelopment/Agents/RemoteAgent"),
+    var DOMAgent        = require("LiveDevelopment/impls/default/Agents/DOMAgent"),
+        Inspector       = require("LiveDevelopment/impls/default/Inspector/Inspector"),
+        LiveDevelopment = require("LiveDevelopment/impls/default/LiveDevelopment"),
+        RemoteAgent     = require("LiveDevelopment/impls/default/Agents/RemoteAgent"),
         _               = require("thirdparty/lodash");
 
     var _highlight = {}; // active highlight

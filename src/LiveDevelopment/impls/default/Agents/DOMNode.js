@@ -35,7 +35,7 @@
 define(function DOMNodeModule(require, exports, module) {
     "use strict";
 
-    var DOMHelpers = require("LiveDevelopment/Agents/DOMHelpers");
+    var DOMHelpers = require("LiveDevelopment/impls/default/Agents/DOMHelpers");
 
     /** Fill a string to the given length (used for debug output)
      * @param {string} source string

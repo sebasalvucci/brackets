@@ -50,18 +50,18 @@ define(function (require, exports, module) {
         ProjectManager;
     
     // Used as mocks
-    require("LiveDevelopment/main");
+    require("LiveDevelopment/impls/default/main");
     var CommandsModule                = require("command/Commands"),
         CommandsManagerModule         = require("command/CommandManager"),
-        LiveDevelopmentModule         = require("LiveDevelopment/LiveDevelopment"),
-        InspectorModule               = require("LiveDevelopment/Inspector/Inspector"),
-        CSSDocumentModule             = require("LiveDevelopment/Documents/CSSDocument"),
-        CSSAgentModule                = require("LiveDevelopment/Agents/CSSAgent"),
-        HighlightAgentModule          = require("LiveDevelopment/Agents/HighlightAgent"),
-        HTMLDocumentModule            = require("LiveDevelopment/Documents/HTMLDocument"),
+        LiveDevelopmentModule         = require("LiveDevelopment/impls/default/LiveDevelopment"),
+        InspectorModule               = require("LiveDevelopment/impls/default/Inspector/Inspector"),
+        CSSDocumentModule             = require("LiveDevelopment/impls/default/Documents/CSSDocument"),
+        CSSAgentModule                = require("LiveDevelopment/impls/default/Agents/CSSAgent"),
+        HighlightAgentModule          = require("LiveDevelopment/impls/default/Agents/HighlightAgent"),
+        HTMLDocumentModule            = require("LiveDevelopment/impls/default/Documents/HTMLDocument"),
         HTMLInstrumentationModule     = require("language/HTMLInstrumentation"),
         NativeAppModule               = require("utils/NativeApp"),
-        CSSPreprocessorDocumentModule = require("LiveDevelopment/Documents/CSSPreprocessorDocument");
+        CSSPreprocessorDocumentModule = require("LiveDevelopment/impls/default/Documents/CSSPreprocessorDocument");
     
     var testPath    = SpecRunnerUtils.getTestPath("/spec/LiveDevelopment-test-files"),
         tempDir     = SpecRunnerUtils.getTempDirectory(),

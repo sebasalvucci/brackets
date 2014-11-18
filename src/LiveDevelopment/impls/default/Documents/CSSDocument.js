@@ -50,11 +50,11 @@ define(function CSSDocumentModule(require, exports, module) {
     "use strict";
 
     var _               = require("thirdparty/lodash"),
-        CSSAgent        = require("LiveDevelopment/Agents/CSSAgent"),
+        CSSAgent        = require("LiveDevelopment/impls/default/Agents/CSSAgent"),
         CSSUtils        = require("language/CSSUtils"),
         EditorManager   = require("editor/EditorManager"),
-        HighlightAgent  = require("LiveDevelopment/Agents/HighlightAgent"),
-        Inspector       = require("LiveDevelopment/Inspector/Inspector");
+        HighlightAgent  = require("LiveDevelopment/impls/default/Agents/HighlightAgent"),
+        Inspector       = require("LiveDevelopment/impls/default/Inspector/Inspector");
 
     /**
      * @constructor
