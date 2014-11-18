@@ -23,7 +23,7 @@
 
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, forin: true, maxerr: 50, regexp: true */
-/*global define, $, less, window */
+/*global brackets, define, $, less, window */
 
 /**
  * main integrates LiveDevelopment into Brackets
@@ -32,6 +32,8 @@
  *
  *  "Go Live": open or close a Live Development session and visualize the status
  *  "Highlight": toggle source highlighting
+ *
+ * @require DocumentManager
  */
 define(function main(require, exports, module) {
     "use strict";
@@ -39,8 +41,6 @@ define(function main(require, exports, module) {
     var DocumentManager     = require("document/DocumentManager"),
         Commands            = require("command/Commands"),
         AppInit             = require("utils/AppInit"),
-        LiveDevelopment     = require("LiveDevelopment/LiveDevelopment"),
-        Inspector           = require("LiveDevelopment/Inspector/Inspector"),
         CommandManager      = require("command/CommandManager"),
         PreferencesManager  = require("preferences/PreferencesManager"),
         Dialogs             = require("widgets/Dialogs"),
@@ -48,52 +48,29 @@ define(function main(require, exports, module) {
         UrlParams           = require("utils/UrlParams").UrlParams,
         Strings             = require("strings"),
         ExtensionUtils      = require("utils/ExtensionUtils"),
-        StringUtils         = require("utils/StringUtils");
-    
-    // expermiental multi-browser implementation
-    var MultiBrowserLiveDev = require("LiveDevelopment/LiveDevMultiBrowser");
+        StringUtils         = require("utils/StringUtils"),
+        Menus               = require("command/Menus"),
+        LiveDevelopment     = require("LiveDevelopment/MultiBrowserImpl/LiveDevelopment");
 
     var params = new UrlParams();
-    var config = {
-        experimental: false, // enable experimental features
-        multiBrowser: false, // enable experimental multi-browser implementation
-        debug: true, // enable debug output and helpers
-        autoconnect: false, // go live automatically after startup?
-        highlight: true, // enable highlighting?
-        highlightConfig: { // the highlight configuration for the Inspector
-            borderColor:  {r: 255, g: 229, b: 153, a: 0.66},
-            contentColor: {r: 111, g: 168, b: 220, a: 0.55},
-            marginColor:  {r: 246, g: 178, b: 107, a: 0.66},
-            paddingColor: {r: 147, g: 196, b: 125, a: 0.66},
-            showInfo: true
-        }
-    };
+
     // Status labels/styles are ordered: error, not connected, progress1, progress2, connected.
     var _statusTooltip = [
         Strings.LIVE_DEV_STATUS_TIP_NOT_CONNECTED,
         Strings.LIVE_DEV_STATUS_TIP_NOT_CONNECTED,
         Strings.LIVE_DEV_STATUS_TIP_PROGRESS1,
-        Strings.LIVE_DEV_STATUS_TIP_PROGRESS2,
         Strings.LIVE_DEV_STATUS_TIP_CONNECTED,
         Strings.LIVE_DEV_STATUS_TIP_OUT_OF_SYNC,
-        Strings.LIVE_DEV_STATUS_TIP_SYNC_ERROR
+        Strings.LIVE_DEV_STATUS_TIP_SYNC_ERROR,
+        Strings.LIVE_DEV_STATUS_TIP_PROGRESS1,
+        Strings.LIVE_DEV_STATUS_TIP_PROGRESS1
     ];
 
-    var _statusStyle = ["warning", "", "info", "info", "success", "out-of-sync", "sync-error"];  // Status indicator's CSS class
+    var _statusStyle = ["warning", "", "info", "success", "out-of-sync", "sync-error", "info", "info"];  // Status indicator's CSS class
     var _allStatusStyles = _statusStyle.join(" ");
 
     var _$btnGoLive; // reference to the GoLive button
-
-    /** Load Live Development LESS Style */
-    function _loadStyles() {
-        var lessText    = require("text!LiveDevelopment/main.less"),
-            parser      = new less.Parser();
-        
-        parser.parse(lessText, function onParse(err, tree) {
-            console.assert(!err, err);
-            ExtensionUtils.addEmbeddedStyleSheet(tree.toCSS());
-        });
-    }
+    var _$btnHighlight; // reference to the HighlightButton
 
     /**
      * Change the appearance of a button. Omit text to remove any extra text; omit style to return to default styling;
@@ -130,8 +107,8 @@ define(function main(require, exports, module) {
         if (LiveDevelopment.status >= LiveDevelopment.STATUS_ACTIVE) {
             LiveDevelopment.close();
         } else if (LiveDevelopment.status <= LiveDevelopment.STATUS_INACTIVE) {
-            if (!params.get("skipLiveDevelopmentInfo") && !PreferencesManager.getViewState("livedev.afterFirstLaunch")) {
-                PreferencesManager.setViewState("livedev.afterFirstLaunch", "true");
+            if (!params.get("skipLiveDevelopmentInfo") && !PreferencesManager.getViewState("livedev2.afterFirstLaunch")) {
+                PreferencesManager.setViewState("livedev2.afterFirstLaunch", "true");
                 Dialogs.showModalDialog(
                     DefaultDialogs.DIALOG_ID_INFO,
                     Strings.LIVE_DEVELOPMENT_INFO_TITLE,
@@ -177,7 +154,7 @@ define(function main(require, exports, module) {
     
     /** Create the menu item "Go Live" */
     function _setupGoLiveButton() {
-        _$btnGoLive = $("#toolbar-go-live");
+        _$btnGoLive = _$btnGoLive = $("#toolbar-go-live");
         _$btnGoLive.click(function onGoLive() {
             _handleGoLiveCommand();
         });
@@ -187,9 +164,6 @@ define(function main(require, exports, module) {
             // various status codes.
             _setLabel(_$btnGoLive, null, _statusStyle[status + 1], _statusTooltip[status + 1]);
             _showStatusChangeReason(reason);
-            if (config.autoconnect) {
-                window.sessionStorage.setItem("live.enabled", status === 3);
-            }
         });
 
         // Initialize tooltip for 'not connected' state
@@ -201,100 +175,40 @@ define(function main(require, exports, module) {
         $(LiveDevelopment).on("statusChange", function statusChange(event, status) {
             // Update the checkmark next to 'Live Preview' menu item
             // Add checkmark when status is STATUS_ACTIVE; otherwise remove it
-            CommandManager.get(Commands.FILE_LIVE_FILE_PREVIEW).setChecked(status === LiveDevelopment.STATUS_ACTIVE);
-            CommandManager.get(Commands.FILE_LIVE_HIGHLIGHT).setEnabled(status === LiveDevelopment.STATUS_ACTIVE);
+            CommandManager.get("file.previewHighlight").setEnabled(status === LiveDevelopment.STATUS_INACTIVE);
         });
     }
 
     function _updateHighlightCheckmark() {
-        CommandManager.get(Commands.FILE_LIVE_HIGHLIGHT).setChecked(config.highlight);
+        CommandManager.get("file.previewHighlight").setChecked(PreferencesManager.getViewState("file.previewHighlight"));
     }
     
     function _handlePreviewHighlightCommand() {
-        config.highlight = !config.highlight;
-        _updateHighlightCheckmark();
-        if (config.highlight) {
-            LiveDevelopment.showHighlight();
-        } else {
-            LiveDevelopment.hideHighlight();
-        }
-        PreferencesManager.setViewState("livedev.highlight", config.highlight);
+        PreferencesManager.setViewState("file.previewHighlight", !PreferencesManager.getViewState("file.previewHighlight"));
     }
     
-    /** Setup window references to useful LiveDevelopment modules */
-    function _setupDebugHelpers() {
-        window.ld = LiveDevelopment;
-        window.i = Inspector;
-        window.report = function report(params) { window.params = params; console.info(params); };
-    }
-
-    /** force reload the live preview */
-    function _handleReloadLivePreviewCommand() {
-        if (LiveDevelopment.status >= LiveDevelopment.STATUS_ACTIVE) {
-            LiveDevelopment.reload();
-        }
-    }
-
     /** Initialize LiveDevelopment */
-    AppInit.appReady(function () {
-        
+    function init() {
         params.parse();
-        
-        if (!config.multiBrowser) { 
-            // init LiveDevelopment
-            Inspector.init(config);
-            LiveDevelopment.init(config);
-        } else {
-            // init experimental multi-browser implementation
-            LiveDevelopment = MultiBrowserLiveDev;
-            LiveDevelopment.init(config);
-        }
-        
-        _loadStyles();
+
+        LiveDevelopment.init();
         _setupGoLiveButton();
         _setupGoLiveMenu();
 
         _updateHighlightCheckmark();
-        
-        if (config.debug) {
-            _setupDebugHelpers();
-        }
-
-        // trigger autoconnect
-        if (config.autoconnect &&
-                window.sessionStorage.getItem("live.enabled") === "true" &&
-                DocumentManager.getCurrentDocument()) {
-            _handleGoLiveCommand();
-        }
-        
-        // Redraw highlights when window gets focus. This ensures that the highlights
-        // will be in sync with any DOM changes that may have occurred.
-        $(window).focus(function () {
-            if (Inspector.connected() && config.highlight) {
-                LiveDevelopment.redrawHighlight();
-            }
-        });
-    });
+    }
     
     // init prefs
-    PreferencesManager.stateManager.definePreference("livedev.highlight", "boolean", true)
+    PreferencesManager.stateManager.definePreference("file.previewHighlight", "boolean", true)
         .on("change", function () {
-            config.highlight = PreferencesManager.getViewState("livedev.highlight");
             _updateHighlightCheckmark();
         });
     
-    PreferencesManager.convertPreferences(module, {
-        "highlight": "user livedev.highlight",
-        "afterFirstLaunch": "user livedev.afterFirstLaunch"
-    }, true);
-    
-    config.highlight = PreferencesManager.getViewState("livedev.highlight");
-   
     // init commands
     CommandManager.register(Strings.CMD_LIVE_FILE_PREVIEW,  Commands.FILE_LIVE_FILE_PREVIEW, _handleGoLiveCommand);
     CommandManager.register(Strings.CMD_LIVE_HIGHLIGHT, Commands.FILE_LIVE_HIGHLIGHT, _handlePreviewHighlightCommand);
-    CommandManager.register(Strings.CMD_RELOAD_LIVE_PREVIEW, Commands.CMD_RELOAD_LIVE_PREVIEW, _handleReloadLivePreviewCommand);
     CommandManager.get(Commands.FILE_LIVE_HIGHLIGHT).setEnabled(false);
-
+    
     // Export public functions
+    exports.init = init;
 });
