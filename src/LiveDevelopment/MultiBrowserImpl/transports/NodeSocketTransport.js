@@ -77,7 +77,7 @@ define(function (require, exports, module) {
     
     // Proxy the node domain methods directly through, since they have exactly the same
     // signatures as the ones we're supposed to provide.
-    ["launch", "send", "close"].forEach(function (method) {
+    ["start", "send", "close"].forEach(function (method) {
         exports[method] = function () {
             var args = Array.prototype.slice.call(arguments);
             args.unshift(method);

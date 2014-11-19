@@ -27,7 +27,6 @@
     "use strict";
     
     var WebSocketServer = require("ws").Server,
-        open = require("open"),
         _ = require("lodash");
     
     /**
@@ -137,12 +136,11 @@
     }
     
     /**
-     * Initializes the socket server, then launches the given URL in the system default browser.
+     * Initializes the socket server.
      * @param {string} url
      */
-    function _cmdLaunch(url) {
+    function _cmdStart(url) {
         _createServer();
-        open(url);
     }
     
     /**
@@ -187,13 +185,10 @@
         }
         domainManager.registerCommand(
             "nodeSocketTransport",      // domain name
-            "launch",       // command name
-            _cmdLaunch,     // command handler function
+            "start",       // command name
+            _cmdStart,     // command handler function
             false,          // this command is synchronous in Node
-            "Launches a given HTML file in the browser for live development",
-            [{name: "url", // parameters
-                type: "string",
-                description: "file:// url to the HTML file"}],
+            "Creates the WS server",
             []
         );
         domainManager.registerCommand(

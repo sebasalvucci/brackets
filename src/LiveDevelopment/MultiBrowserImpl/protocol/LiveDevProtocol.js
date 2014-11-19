@@ -37,12 +37,14 @@
  *
  * It keeps active connections which are  updated when receiving "connect" and "close" from the 
  * underlying transport. Events "Connection.connect"/"Connection.close" are triggered as 
- * propagation of transport's "connect"/"close". Also proxies "launch" command to transport.
+ * propagation of transport's "connect"/"close".
  * 
  */
 
 define(function (require, exports, module) {
     "use strict";
+    
+    var NativeApp = require('utils/NativeApp');
     
     // Text of the script we'll inject into the browser that handles protocol requests.
     var LiveDevProtocolRemote = require("text!LiveDevelopment/MultiBrowserImpl/protocol/remote/LiveDevProtocolRemote.js"),
@@ -60,7 +62,7 @@ define(function (require, exports, module) {
     /**
      * @private
      * The low-level transport we're communicating over, set by `setTransport()`.
-     * @type {{launch: function(string), send: function(number|Array.<number>, string), close: function(number), getRemoteScript: function(): ?string}}
+     * @type {{start: function(), send: function(number|Array.<number>, string), close: function(number), getRemoteScript: function(): ?string}}
      */
     var _transport = null;
     
@@ -191,6 +193,7 @@ define(function (require, exports, module) {
             .on("close.livedev", function (event, clientId) {
                 _close(clientId);
             });
+        _transport.start();
     }
     
     
@@ -225,11 +228,11 @@ define(function (require, exports, module) {
     }
     
     /**
-     * Launches the given URL in the browser. Proxies to the transport.
+     * Launches the given URL in the browser.
      * @param {string} url
      */
     function launch(url) {
-        _transport.launch(url);
+        NativeApp.openLiveBrowser(url, false);
     }
     
     /**
