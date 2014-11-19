@@ -56,7 +56,6 @@ define(function main(require, exports, module) {
     var params = new UrlParams();
     var config = {
         experimental: false, // enable experimental features
-        multiBrowser: false, // enable experimental multi-browser implementation
         debug: true, // enable debug output and helpers
         autoconnect: false, // go live automatically after startup?
         highlight: true, // enable highlighting?
@@ -83,6 +82,8 @@ define(function main(require, exports, module) {
     var _allStatusStyles = _statusStyle.join(" ");
 
     var _$btnGoLive; // reference to the GoLive button
+    
+    var LiveDevImpl;
 
     /** Load Live Development LESS Style */
     function _loadStyles() {
@@ -127,9 +128,10 @@ define(function main(require, exports, module) {
      * Do nothing when in a connecting state (CONNECTING, LOADING_AGENTS).
      */
     function _handleGoLiveCommand() {
-        if (LiveDevelopment.status >= LiveDevelopment.STATUS_ACTIVE) {
-            LiveDevelopment.close();
-        } else if (LiveDevelopment.status <= LiveDevelopment.STATUS_INACTIVE) {
+        
+        if (LiveDevImpl.status >= LiveDevImpl.STATUS_ACTIVE) {
+            LiveDevImpl.close();
+        } else if (LiveDevImpl.status <= LiveDevImpl.STATUS_INACTIVE) {
             if (!params.get("skipLiveDevelopmentInfo") && !PreferencesManager.getViewState("livedev.afterFirstLaunch")) {
                 PreferencesManager.setViewState("livedev.afterFirstLaunch", "true");
                 Dialogs.showModalDialog(
@@ -137,10 +139,10 @@ define(function main(require, exports, module) {
                     Strings.LIVE_DEVELOPMENT_INFO_TITLE,
                     Strings.LIVE_DEVELOPMENT_INFO_MESSAGE
                 ).done(function (id) {
-                    LiveDevelopment.open();
+                    LiveDevImpl.open();
                 });
             } else {
-                LiveDevelopment.open();
+                LiveDevImpl.open();
             }
         }
     }
@@ -181,7 +183,7 @@ define(function main(require, exports, module) {
         _$btnGoLive.click(function onGoLive() {
             _handleGoLiveCommand();
         });
-        $(LiveDevelopment).on("statusChange", function statusChange(event, status, reason) {
+        $(LiveDevImpl).on("statusChange", function statusChange(event, status, reason) {
             // status starts at -1 (error), so add one when looking up name and style
             // See the comments at the top of LiveDevelopment.js for details on the
             // various status codes.
@@ -198,11 +200,11 @@ define(function main(require, exports, module) {
     
     /** Maintains state of the Live Preview menu item */
     function _setupGoLiveMenu() {
-        $(LiveDevelopment).on("statusChange", function statusChange(event, status) {
+        $(LiveDevImpl).on("statusChange", function statusChange(event, status) {
             // Update the checkmark next to 'Live Preview' menu item
             // Add checkmark when status is STATUS_ACTIVE; otherwise remove it
-            CommandManager.get(Commands.FILE_LIVE_FILE_PREVIEW).setChecked(status === LiveDevelopment.STATUS_ACTIVE);
-            CommandManager.get(Commands.FILE_LIVE_HIGHLIGHT).setEnabled(status === LiveDevelopment.STATUS_ACTIVE);
+            CommandManager.get(Commands.FILE_LIVE_FILE_PREVIEW).setChecked(status === LiveDevImpl.STATUS_ACTIVE);
+            CommandManager.get(Commands.FILE_LIVE_HIGHLIGHT).setEnabled(status === LiveDevImpl.STATUS_ACTIVE);
         });
     }
 
@@ -214,11 +216,24 @@ define(function main(require, exports, module) {
         config.highlight = !config.highlight;
         _updateHighlightCheckmark();
         if (config.highlight) {
-            LiveDevelopment.showHighlight();
+            LiveDevImpl.showHighlight();
         } else {
-            LiveDevelopment.hideHighlight();
+            LiveDevImpl.hideHighlight();
         }
         PreferencesManager.setViewState("livedev.highlight", config.highlight);
+    }
+    
+    
+    // returns MultiBrowserLiveDev module if livedev.multibrowser pref is set to true or 
+    // LiveDevelopment module (default implementation) in other case
+    function _getImplementation() {
+        var impl;
+        if (PreferencesManager.get('livedev.multibrowser')) {
+            impl = MultiBrowserLiveDev;
+        } else {
+            impl = LiveDevelopment;
+        }
+        return impl;
     }
     
     /** Setup window references to useful LiveDevelopment modules */
@@ -239,16 +254,19 @@ define(function main(require, exports, module) {
     AppInit.appReady(function () {
         
         params.parse();
+    
+        // init LiveDevelopment
+        Inspector.init(config);
+        LiveDevelopment.init(config);
         
-        if (!config.multiBrowser) { 
-            // init LiveDevelopment
-            Inspector.init(config);
-            LiveDevelopment.init(config);
-        } else {
-            // init experimental multi-browser implementation
-            LiveDevelopment = MultiBrowserLiveDev;
-            LiveDevelopment.init(config);
-        }
+        // init experimental multi-browser implementation 
+        // it can be enable by setting 'livedev.multibrowser' preference to true.
+        // It has to be initiated at this point in case of dynamically switching 
+        // by changing the preference value.
+        MultiBrowserLiveDev.init(config);
+        
+        // set current active implementation based on pref
+        LiveDevImpl = _getImplementation();
         
         _loadStyles();
         _setupGoLiveButton();
@@ -287,6 +305,15 @@ define(function main(require, exports, module) {
         "highlight": "user livedev.highlight",
         "afterFirstLaunch": "user livedev.afterFirstLaunch"
     }, true);
+    
+    PreferencesManager.definePreference("livedev.multibrowser", "boolean", false)
+        .on("change", function () {
+            // get implementation based on the new value
+            LiveDevImpl = _getImplementation();
+            // restart: it will close the current session and open a
+            // a new session based on the new selected implementation
+            _handleGoLiveCommand();
+        });
     
     config.highlight = PreferencesManager.getViewState("livedev.highlight");
    
