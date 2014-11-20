@@ -828,9 +828,13 @@ define(function (require, exports, module) {
         return _server && _server.getBaseUrl();
     }
     
+    // for unit testing only
+    function _getCurrentLiveDoc() {
+        return _liveDocument;
+    }
     // For unit testing
     exports._server                   = _server;
-    exports._liveDocument             = _liveDocument;
+    exports._getCurrentLiveDoc        = _getCurrentLiveDoc;
     exports._getInitialDocFromCurrent = _getInitialDocFromCurrent;
 
     // Export public functions
