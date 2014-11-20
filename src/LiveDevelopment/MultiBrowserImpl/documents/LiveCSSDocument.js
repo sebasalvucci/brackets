@@ -99,9 +99,7 @@ define(function LiveCSSDocumentModule(require, exports, module) {
                 // reload the original doc
                 $(this).triggerHandler("updateDoc", this.roots[i]);
             } else {
-                this.protocol.evaluate("_LD.reloadCSS(" +
-                                       JSON.stringify(this.doc.url) + ", " +
-                                       JSON.stringify(this.doc.getText()) + ")");
+                this.protocol.setStylesheetText(this.doc.url, this.doc.getText());
             }
         }
         this.redrawHighlights();

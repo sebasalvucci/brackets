@@ -49,7 +49,6 @@ define(function (require, exports, module) {
     // Text of the script we'll inject into the browser that handles protocol requests.
     var LiveDevProtocolRemote = require("text!LiveDevelopment/MultiBrowserImpl/protocol/remote/LiveDevProtocolRemote.js"),
         DocumentObserver = require("text!LiveDevelopment/MultiBrowserImpl/protocol/remote/DocumentObserver.js"),
-        AddedRemoteFunctions = require("text!LiveDevelopment/MultiBrowserImpl/protocol/remote/ExtendedRemoteFunctions.js"),
         RemoteFunctions = require("text!LiveDevelopment/Agents/RemoteFunctions.js");
     
     /**
@@ -208,7 +207,7 @@ define(function (require, exports, module) {
         // Inject DocumentObserver into the browser (tracks related documents)
         script += DocumentObserver;
         // Inject remote functions into the browser.
-        script += "window._LD=" + AddedRemoteFunctions + "(" + RemoteFunctions + "())";
+        script += "window._LD=(" + RemoteFunctions + "())";
         return "<script>\n" + script + "</script>\n";
     }
     
@@ -244,6 +243,18 @@ define(function (require, exports, module) {
                 }
             },
             clients
+        );
+    }
+    
+    function setStylesheetText(url, text, clients) {
+        return _send(
+            {
+                method: "CSS.setStylesheetText",
+                params: {
+                    url: url,
+                    text: text
+                }
+            }
         );
     }
     
@@ -304,6 +315,7 @@ define(function (require, exports, module) {
     exports.setTransport = setTransport;
     exports.getRemoteScript = getRemoteScript;
     exports.evaluate = evaluate;
+    exports.setStylesheetText = setStylesheetText;
     exports.reload = reload;
     exports.navigate = navigate;
     exports.close = close;

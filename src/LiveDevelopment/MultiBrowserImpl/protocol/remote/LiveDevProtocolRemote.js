@@ -152,6 +152,45 @@
     MessageBroker.on("Runtime.evaluate", Runtime.evaluate);
     
     /**
+     * CSS Domain.
+     */
+    var CSS = {
+        
+        setStylesheetText : function (msg) {
+            
+            if (!msg || !msg.params || !msg.params.text || !msg.params.url) {
+                return;
+            }
+            
+            var i,
+                node;
+
+            var head = document.getElementsByTagName('head')[0];
+            // create an style element to replace the one loaded with <link>
+            var s = document.createElement('style');
+            s.type = 'text/css';
+            s.appendChild(document.createTextNode(msg.params.text));
+
+            for (i = 0; i < document.styleSheets.length; i++) {
+                node = document.styleSheets[i];
+                if (node.ownerNode.id === msg.params.url) {
+                    head.insertBefore(s, node.ownerNode); // insert the style element here
+                    // now can remove the style element previously created (if any)
+                    node.ownerNode.parentNode.removeChild(node.ownerNode);
+                } else if (node.href === msg.params.url  && !node.disabled) {
+                    // if the link element to change 
+                    head.insertBefore(s, node.ownerNode); // insert the style element here
+                    node.disabled = true;
+                    i++; // since we have just inserted a stylesheet
+                }
+            }
+            s.id = msg.params.url;
+        }
+    };
+    
+    MessageBroker.on("CSS.setStylesheetText", CSS.setStylesheetText);
+    
+    /**
      * Page Domain.
      */
     var Page = {
