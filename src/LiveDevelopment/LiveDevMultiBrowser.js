@@ -81,9 +81,11 @@ define(function (require, exports, module) {
         ExtensionUtils       = require("utils/ExtensionUtils"),
         FileSystemError      = require("filesystem/FileSystemError"),
         FileUtils            = require("file/FileUtils"),
+        NativeApp            = require("utils/NativeApp"),
         PreferencesDialogs   = require("preferences/PreferencesDialogs"),
         ProjectManager       = require("project/ProjectManager"),
         Strings              = require("strings"),
+        StringUtils          = require("utils/StringUtils"),
         _                    = require("thirdparty/lodash"),
         LiveDevServerManager = require("LiveDevelopment/LiveDevServerManager"),
         NodeSocketTransport  = require("LiveDevelopment/MultiBrowserImpl/transports/NodeSocketTransport"),
@@ -480,11 +482,11 @@ define(function (require, exports, module) {
                 _server = null;
             }
         }
-
-        // TODO: don't have a way to close windows in the new architecture
-//        if (doCloseWindow) {
-//        }
-        
+        if (doCloseWindow) {
+            if (brackets.platform === "mac") {
+                NativeApp.closeLiveBrowser();
+            }
+        }
         _setStatus(STATUS_INACTIVE, reason || "explicit_close");
     }
 
@@ -532,6 +534,20 @@ define(function (require, exports, module) {
         _server.add(_liveDocument);
     }
     
+    
+     /**
+     * Launches the given URL in the default browser.
+     * @param {string} url
+     * TODO: launchers for multiple browsers
+     */
+    function _launch(url) {
+        // open default browser
+        // TODO: fail?
+        // 
+        NativeApp.openLiveBrowser(url, false);
+        
+    }
+    
     /**
      * @private
      * Launches the given document in the browser, given that a live document has already
@@ -544,7 +560,7 @@ define(function (require, exports, module) {
                 // Launch the URL in the browser. If it's the first one to connect back to us,
                 // our status will transition to ACTIVE once it does so.
                 if (exports.status < STATUS_ACTIVE) {
-                    _protocol.launch(_server.pathToUrl(doc.file.fullPath));
+                    _launch(_server.pathToUrl(doc.file.fullPath));
                 }
                 if (exports.status === STATUS_RESTARTING) {
                     // change page in browser

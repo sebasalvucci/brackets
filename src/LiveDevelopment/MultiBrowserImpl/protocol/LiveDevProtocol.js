@@ -176,7 +176,7 @@ define(function (require, exports, module) {
     /**
      * Sets the transport that should be used by the protocol. See `LiveDevelopment.setTransport()`
      * for more detail on the transport.
-     * @param {{launch: function(string), send: function(number|Array.<number>, string), close: function(number), getRemoteScript: function(): ?string}} transport
+     * @param {{start: function(string), send: function(number|Array.<number>, string), close: function(number), getRemoteScript: function(): ?string}} transport
      */
     function setTransport(transport) {
         if (_transport) {
@@ -224,15 +224,6 @@ define(function (require, exports, module) {
         return transportScript +
             "<script>\n" + LiveDevProtocolRemote + "</script>\n" +
             remoteFunctionsScript;
-            
-    }
-    
-    /**
-     * Launches the given URL in the browser.
-     * @param {string} url
-     */
-    function launch(url) {
-        NativeApp.openLiveBrowser(url, false);
     }
     
     /**
@@ -312,7 +303,6 @@ define(function (require, exports, module) {
     // public API
     exports.setTransport = setTransport;
     exports.getRemoteScript = getRemoteScript;
-    exports.launch = launch;
     exports.evaluate = evaluate;
     exports.reload = reload;
     exports.navigate = navigate;
