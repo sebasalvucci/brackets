@@ -246,6 +246,15 @@ define(function (require, exports, module) {
         );
     }
     
+    /**
+     * Protocol method. Reloads a CSS styleseet in the browser (by replacing its text) given its url.
+     * @param {string} url Absolute URL of the stylesheet
+     * @param {string} text The new text of the stylesheet
+     * @param {number|Array.<number>} clients A client ID or array of client IDs that should evaluate
+     *      the script.
+     * @return {$.Promise} A promise that's resolved with the return value from the first client that responds
+     *      to the evaluation.
+     */
     function setStylesheetText(url, text, clients) {
         return _send(
             {
