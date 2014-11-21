@@ -267,6 +267,25 @@ define(function (require, exports, module) {
         );
     }
     
+     /**
+     * Protocol method. Rretrieves the content of a given stylesheet (for unit testing)
+     * @param {number|Array.<number>} clients A client ID or array of client IDs that should navigate to the given URL.
+     * @param {string} url Absolute URL that identifies the stylesheet.
+     * @return {$.Promise} A promise that's resolved with the return value from the first client that responds
+     *      to the method.
+     */
+    function getStylesheetText(url, clients) {
+        return _send(
+            {
+                method: "CSS.getStylesheetText",
+                params: {
+                    url: url
+                }
+            },
+            clients
+        );
+    }
+    
     /**
      * Protocol method. Reloads the page that is currently loaded into the browser, optionally ignoring cache.
      * @param {number|Array.<number>} clients A client ID or array of client IDs that should reload the page.
@@ -325,6 +344,7 @@ define(function (require, exports, module) {
     exports.getRemoteScript = getRemoteScript;
     exports.evaluate = evaluate;
     exports.setStylesheetText = setStylesheetText;
+    exports.getStylesheetText = getStylesheetText;
     exports.reload = reload;
     exports.navigate = navigate;
     exports.close = close;

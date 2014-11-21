@@ -165,6 +165,18 @@ define(function LiveCSSDocumentModule(require, exports, module) {
         $(this).triggerHandler("deleted", [this]);
     };
 
+    // Only used for unit testing.
+    LiveCSSDocument.prototype.getSourceFromBrowser = function () {
+        var deferred = new $.Deferred();
+        
+        this.protocol.getStylesheetText(this.doc.url)
+            .then(function (res) {
+                deferred.resolve(res.text);
+            }, deferred.reject);
+        
+        return deferred.promise();
+    };
+
     // Export the class
     module.exports = LiveCSSDocument;
 });

@@ -49,6 +49,10 @@ define(function (require, exports, module) {
         var testFolder = SpecRunnerUtils.getTestPath("/spec/LiveDevelopment-MultiBrowser-test-files"),
             allSpacesRE = /\s+/gi;
 
+        function fixSpaces(str) {
+            return str.replace(allSpacesRE, " ");
+        }
+
         beforeEach(function () {
             // Create a new window that will be shared by ALL tests in this spec.
             if (!testWindow) {
@@ -220,6 +224,46 @@ define(function (require, exports, module) {
                 
                 runs(function () {
                     expect(liveDoc.isRelated(testFolder + "/simple2.css")).toBeFalsy();
+                });
+            });
+            
+            
+            it("should push changes through browser connection when editing a related CSS", function () {
+                var localText,
+                    browserText,
+                    liveDoc,
+                    curDoc;
+
+                runs(function () {
+                    waitsForDone(SpecRunnerUtils.openProjectFiles(["simple1.html"]), "SpecRunnerUtils.openProjectFiles simple1.html", 1000);
+                });
+
+                waitsForLiveDevelopmentToOpen();
+
+                runs(function () {
+                    waitsForDone(SpecRunnerUtils.openProjectFiles(["simple1.css"]), "SpecRunnerUtils.openProjectFiles simple1.css", 1000);
+                });
+                runs(function () {
+                    curDoc =  DocumentManager.getCurrentDocument();
+                    localText = curDoc.getText();
+                    localText += "\n .testClass { background-color:#090; }\n";
+                    curDoc.setText(localText);
+                });
+                runs(function () {
+                    liveDoc = LiveDevelopment.getLiveDocForPath(testFolder + "/simple1.css");
+                });
+                var doneSyncing = false;
+                runs(function () {
+                    liveDoc.getSourceFromBrowser().done(function (text) {
+                        browserText = text;
+                    }).always(function () {
+                        doneSyncing = true;
+                    });
+                });
+                waitsFor(function () { return doneSyncing; }, "Browser to sync changes", 5000);
+
+                runs(function () {
+                    expect(fixSpaces(browserText)).toBe(fixSpaces(localText));
                 });
             });
         });

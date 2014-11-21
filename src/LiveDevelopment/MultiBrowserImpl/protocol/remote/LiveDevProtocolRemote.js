@@ -102,7 +102,7 @@
                 return;
             }
             response.id = orig.id;
-            this.send(JSON.stringify(response));
+            this.send(response);
         },
         
         /**
@@ -185,10 +185,38 @@
                 }
             }
             s.id = msg.params.url;
+        },
+            
+        /**
+        * retrieves the content of the stylesheet
+        * TODO: it now depends on reloadCSS implementation
+        */
+        getStylesheetText: function (msg) {
+            var i,
+                sheet,
+                text;
+            for (i = 0; i < document.styleSheets.length; i++) {
+                sheet = document.styleSheets[i];
+                // if it was already 'reloaded'
+                if (sheet.ownerNode.id ===  msg.params.url) {
+                    text = sheet.ownerNode.innerText;
+                } else if (sheet.href === msg.params.url && !sheet.disabled) {
+                    var j,
+                        rules = document.styleSheets[i].cssRules;
+                    text = "";
+                    for (j = 0; j < rules.length; j++) {
+                        text += rules[j].cssText + '\n';
+                    }
+                }
+            }
+            MessageBroker.respond(msg, {
+                text: text
+            });
         }
     };
     
     MessageBroker.on("CSS.setStylesheetText", CSS.setStylesheetText);
+    MessageBroker.on("CSS.getStylesheetText", CSS.getStylesheetText);
     
     /**
      * Page Domain.
