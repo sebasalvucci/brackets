@@ -68,21 +68,13 @@ define(function main(require, exports, module) {
         }
     };
     // Status labels/styles are ordered: error, not connected, progress1, progress2, connected.
-    var _statusTooltip = [
-        Strings.LIVE_DEV_STATUS_TIP_NOT_CONNECTED,
-        Strings.LIVE_DEV_STATUS_TIP_NOT_CONNECTED,
-        Strings.LIVE_DEV_STATUS_TIP_PROGRESS1,
-        Strings.LIVE_DEV_STATUS_TIP_PROGRESS2,
-        Strings.LIVE_DEV_STATUS_TIP_CONNECTED,
-        Strings.LIVE_DEV_STATUS_TIP_OUT_OF_SYNC,
-        Strings.LIVE_DEV_STATUS_TIP_SYNC_ERROR
-    ];
-
-    var _statusStyle = ["warning", "", "info", "info", "success", "out-of-sync", "sync-error"];  // Status indicator's CSS class
-    var _allStatusStyles = _statusStyle.join(" ");
+    var _statusTooltip,
+        _statusStyle,
+        _allStatusStyles;
 
     var _$btnGoLive; // reference to the GoLive button
     
+    // current selected implementation (LiveDevelopment | LiveDevMultiBrowser)
     var LiveDevImpl;
 
     /** Load Live Development LESS Style */
@@ -128,7 +120,6 @@ define(function main(require, exports, module) {
      * Do nothing when in a connecting state (CONNECTING, LOADING_AGENTS).
      */
     function _handleGoLiveCommand() {
-        
         if (LiveDevImpl.status >= LiveDevImpl.STATUS_ACTIVE) {
             LiveDevImpl.close();
         } else if (LiveDevImpl.status <= LiveDevImpl.STATUS_INACTIVE) {
@@ -223,17 +214,41 @@ define(function main(require, exports, module) {
         PreferencesManager.setViewState("livedev.highlight", config.highlight);
     }
     
-    
-    // returns MultiBrowserLiveDev module if livedev.multibrowser pref is set to true or 
-    // LiveDevelopment module (default implementation) in other case
-    function _getImplementation() {
-        var impl;
-        if (PreferencesManager.get('livedev.multibrowser')) {
-            impl = MultiBrowserLiveDev;
+    // sets the MultiBrowserLiveDev implementation if multibrowser = true,
+    // keeps default LiveDevelopment implementation based on CDT in other case.
+    // since UI status are slightly different btw implementations, it also set 
+    // the corresponding style values.
+    function _setImplementation(multibrowser) {
+        console.log('set implementation ' + multibrowser);
+        if (multibrowser) {
+            // set implemenation
+            LiveDevImpl = MultiBrowserLiveDev;
+            // update styles for UI status 
+            _statusTooltip = [
+                Strings.LIVE_DEV_STATUS_TIP_NOT_CONNECTED,
+                Strings.LIVE_DEV_STATUS_TIP_NOT_CONNECTED,
+                Strings.LIVE_DEV_STATUS_TIP_PROGRESS1,
+                Strings.LIVE_DEV_STATUS_TIP_CONNECTED,
+                Strings.LIVE_DEV_STATUS_TIP_OUT_OF_SYNC,
+                Strings.LIVE_DEV_STATUS_TIP_SYNC_ERROR,
+                Strings.LIVE_DEV_STATUS_TIP_PROGRESS1,
+                Strings.LIVE_DEV_STATUS_TIP_PROGRESS1
+            ];
+            _statusStyle = ["warning", "", "info", "success", "out-of-sync", "sync-error", "info", "info"];  // Status indicator's CSS class
         } else {
-            impl = LiveDevelopment;
+            LiveDevImpl = LiveDevelopment;
+            _statusTooltip = [
+                Strings.LIVE_DEV_STATUS_TIP_NOT_CONNECTED,
+                Strings.LIVE_DEV_STATUS_TIP_NOT_CONNECTED,
+                Strings.LIVE_DEV_STATUS_TIP_PROGRESS1,
+                Strings.LIVE_DEV_STATUS_TIP_PROGRESS2,
+                Strings.LIVE_DEV_STATUS_TIP_CONNECTED,
+                Strings.LIVE_DEV_STATUS_TIP_OUT_OF_SYNC,
+                Strings.LIVE_DEV_STATUS_TIP_SYNC_ERROR
+            ];
+            _statusStyle = ["warning", "", "info", "info", "success", "out-of-sync", "sync-error"];  // Status indicator's CSS class
         }
-        return impl;
+        _allStatusStyles = _statusStyle.join(" ");
     }
     
     /** Setup window references to useful LiveDevelopment modules */
@@ -264,9 +279,6 @@ define(function main(require, exports, module) {
         // It has to be initiated at this point in case of dynamically switching 
         // by changing the preference value.
         MultiBrowserLiveDev.init(config);
-        
-        // set current active implementation based on pref
-        LiveDevImpl = _getImplementation();
         
         _loadStyles();
         _setupGoLiveButton();
@@ -308,11 +320,13 @@ define(function main(require, exports, module) {
     
     PreferencesManager.definePreference("livedev.multibrowser", "boolean", false)
         .on("change", function () {
-            // get implementation based on the new value
-            LiveDevImpl = _getImplementation();
-            // restart: it will close the current session and open a
-            // a new session based on the new selected implementation
-            _handleGoLiveCommand();
+            // stop the current session if it is open and set implementation based on 
+            // the pref value. It could be automaticallty restarted but, since the preference file,
+            // is the document open in the editor, it will no launch a live document.
+            if (LiveDevImpl && LiveDevImpl.status >= LiveDevImpl.STATUS_ACTIVE) {
+                LiveDevImpl.close();
+            }
+            _setImplementation(PreferencesManager.get('livedev.multibrowser'));
         });
     
     config.highlight = PreferencesManager.getViewState("livedev.highlight");
