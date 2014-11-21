@@ -91,6 +91,16 @@
                     }
                 }, 50);
             },
+        
+            onStylesheetRemoved : function (url) {
+                // get style node created when setting new text for stylesheet.
+                var s = document.getElementById(url);
+                // remove 
+                if (s && s.parentNode && s.parentNode.removeChild) {
+                    s.parentNode.removeChild(s);
+                }
+            },
+        
             /**
              * Send a notification for the stylesheet added and  
              * its import-ed styleshets based on document.stylesheets diff
@@ -115,7 +125,7 @@
                     _transport.send(JSON.stringify({
                         method: "Stylesheet.Added",
                         href: v,
-                        roots: added[v]
+                        roots: [added[v]]
                     }));
                 });
                 
@@ -128,17 +138,21 @@
              * from previous status. It also updates stylesheets status.
              */
             notifyStylesheetRemoved : function () {
+                
+                var self = this;
                 var i,
                     removed = {},
                     newStatus,
                     current;
                 
-                current = this.stylesheets;
+                current = self.stylesheets;
                 newStatus = related().stylesheets;
                 
                 Object.keys(current).forEach(function (v, i) {
                     if (!newStatus[v]) {
                         removed[v] = current[v];
+                        // remove node created by setStylesheetText if any
+                        self.onStylesheetRemoved(current[v]);
                     }
                 });
                 
@@ -146,11 +160,11 @@
                     _transport.send(JSON.stringify({
                         method: "Stylesheet.Removed",
                         href: v,
-                        roots: removed[v]
+                        roots: [removed[v]]
                     }));
                 });
                 
-                this.stylesheets = newStatus;
+                self.stylesheets = newStatus;
             }
         };
 
