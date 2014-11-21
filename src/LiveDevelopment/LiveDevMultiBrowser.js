@@ -89,7 +89,8 @@ define(function (require, exports, module) {
         _                    = require("thirdparty/lodash"),
         LiveDevServerManager = require("LiveDevelopment/LiveDevServerManager"),
         NodeSocketTransport  = require("LiveDevelopment/MultiBrowserImpl/transports/NodeSocketTransport"),
-        LiveDevProtocol      = require("LiveDevelopment/MultiBrowserImpl/protocol/LiveDevProtocol");
+        LiveDevProtocol      = require("LiveDevelopment/MultiBrowserImpl/protocol/LiveDevProtocol"),
+        Launcher             = require("LiveDevelopment/MultiBrowserImpl/launchers/Launcher");
     
     // Documents
     var LiveCSSDocument      = require("LiveDevelopment/MultiBrowserImpl/documents/LiveCSSDocument"),
@@ -113,7 +114,7 @@ define(function (require, exports, module) {
     /**
      * @private
      * Current transport for communicating with browser instances. See setTransport().
-     * @type {{launch: function(string), send: function(number|Array.<number>, string), close: function(number)}}
+     * @type {{start: function(string), send: function(number|Array.<number>, string), close: function(number)}}
      */
     var _transport;
     
@@ -544,8 +545,7 @@ define(function (require, exports, module) {
         // open default browser
         // TODO: fail?
         // 
-        NativeApp.openLiveBrowser(url, false);
-        
+        Launcher.launch(url);
     }
     
     /**
