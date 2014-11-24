@@ -483,11 +483,10 @@ define(function (require, exports, module) {
                 _server = null;
             }
         }
-        if (doCloseWindow) {
-            if (brackets.platform === "mac") {
-                NativeApp.closeLiveBrowser();
-            }
-        }
+    //TODO: implement closeWindow together with launchers.
+//        if (doCloseWindow) {
+//            
+//        }
         _setStatus(STATUS_INACTIVE, reason || "explicit_close");
     }
 
