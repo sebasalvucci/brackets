@@ -28,8 +28,6 @@
 define(function (require, exports, module) {
     "use strict";
     
-    var DEFAULT_BROWSER = exports.DEFAULT_BROWSER = 'default';
-    
     var FileUtils  = require("file/FileUtils"),
         NodeDomain = require("utils/NodeDomain");
     
@@ -39,15 +37,15 @@ define(function (require, exports, module) {
         _domainPath     = [_bracketsPath, _modulePath, _nodePath].join("/"),
         _nodeDomain     = new NodeDomain("launcher", _domainPath);
     
-    function launch(url, browser) {
-        if (!browser) {
-            browser = DEFAULT_BROWSER;
-        }
+    
+    /**
+     * Launch the given URL in the system default browser.
+     * @param {string} url
+     */
+    function launch(url) {
         // launch from node domain
-        _nodeDomain.exec("launch", url, browser);
-        console.log("launching " + browser);
+        _nodeDomain.exec("launch", url);
     }
-
     
     // Exports   
     exports.launch = launch;

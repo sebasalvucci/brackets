@@ -34,20 +34,13 @@
      * @type {?DomainManager}
      */
     var _domainManager;
-    
-    /**
-     * @private
-     * A map of client IDs to the URL and WebSocket for the given ID.
-     * @type {Object.<number, {id: number, url: string, socket: WebSocket}>}
-     */
-    var _browsers = {};
 
     /**
-     * Launches the given URL in the given browser.
-	 * TODO: it now launching just on default system, add launchers for specific browsers.
+     * Launch the given URL in the system default browser.
+	 * TODO: it now launching just on default browser, add launchers for specific browsers.
      * @param {string} url
      */
-    function _cmdLaunch(url, browser) {
+    function _cmdLaunch(url) {
         open(url);
     }
     
@@ -74,7 +67,7 @@
             []
         );
     }
-    
+
     exports.init = init;
     
 }());
