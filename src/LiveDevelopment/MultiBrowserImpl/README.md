@@ -1,26 +1,11 @@
 This is an experimental implementation to replace the current live development architecture with something more flexible that isn't tied solely to Chrome Developer Tools. 
-It's based on the current Live Development code in Brackets, both implemenations can be swapped by setting 'livedev.impl' preference:
- 'livedev.impl' : 'livedev2' - enable livedev2 experimental implementation (replaces current LiveDevelopment impl based on CDT)
- 'livedev.impl' : 'default' (or not set) - disable livedev2 (keeps curren LiveDevelopment implementation) 
+It's based on the current Live Development code in Brackets and has been incubated at njx/brackets-livedev2.
 
 ### What's working
 
-If enabled, it will launch will launch the page in your default browser when clicking on the LiveDevelopment icon as it works today. You should then also be able to copy and paste the URL from that browser into any other browser, live edits will then update all connected browsers at once.
+It can be enabled by setting ```livedev.multibrowser``` preference to true. If enabled, it will launch will launch the page in your default browser when clicking on the LiveDevelopment icon as it works today. You should then also be able to copy and paste the URL from that browser into any other browser, live edits will then update all connected browsers at once.
 
-This is still an experimental implementation, the basic functionality for CSS/HTML editing is working but there are could be some scenarios that might be partially or entirely not covered yet. Page reload when saving changes on related Javascript files is also working. Documents that are loaded by the current HTML live doc are being tracked by ```DocumentObserver``` at the browser side which relies on DOM MutationObserver for monitoring added/removed stylesheets and Javascript files. 
-
-### Bugs/cleanup/TODO
-
-* Doesn't show an error if the browser never connects back
-* spurious errors when socket is closed
-* hard-coded port number for WebSocket server (might be fine)
-* It doesn't work on IE (need a fix on ```RemoteFunctions``` which has to be included in Brackets core - see #20)
-* Lots of TODOs in the code
-
-#### Unit tests
-
-We would definitely need a good suite of unit tests for the new functionality. I suspect it would be easier to just write entirely new, more granular unit tests than to try to reuse the old LiveDevelopment integration tests (which were fragile anyway).
-
+This is still an experimental implementation, the basic functionality for CSS/HTML editing is working but there are could be some scenarios that might be partially or entirely not covered yet. Page reload when saving changes on related Javascript files is also working. Documents that are loaded by the current HTML live doc are being tracked by ```DocumentObserver``` at the browser side which relies on DOM MutationObserver for monitoring added/removed stylesheets and Javascript files (just monitoring ```<link>``` and ```<script>``` added/removed nodes so far. 
 
 ### Basic architecture
 
@@ -61,9 +46,9 @@ Here's a short summary of what happens when the user clicks on the Live Preview 
 
 1. LiveDevelopment creates a LiveHTMLDocument for the page, passing it the protocol handler (LiveDevProtocol). LiveHTMLDocument manages communication between the editor and the browser for HTML pages.
 2. LiveDevelopment tells StaticServer that this path has a live document. StaticServer is in charge of actually serving the page and associated assets to the browser. (Note: eventually I think we should get rid of this step - StaticServer shouldn't know anything about live documents directly; it should just have a way of request instrumented text for HTML URLs.)
-3. LiveDevelopment tells the protocol to open the page via the StaticServer URL. The protocol just passes this through to the transport (NodeSocketTransport), which first creates a WebSocket server if it hasn't already, then opens the page in the default browser.
+3. LiveDevelopment tells the launcher to open the page via the StaticServer URL, then it opens the page in the default browser.
 4. The browser requests the page from StaticServer. StaticServer notes that there is a live document for this page, and requests an instrumented version of the page from LiveHTMLDocument. (The current "requestFilterPaths" mechanism for this could be simplified, I think.)
-5. LiveHTMLDocument instruments the page for live editing using the existing HTMLInstrumentation mechanism, and additionally includes remote scripts provided by the protocol (LiveDevProtocolRemote), transport (NodeSocketTransportRemote), remote functions (RemoteFunctions) and document observation (DocumentObserver) which tracks related documents. The transport script includes the URL for the WebSocket server created in step 3.
+5. LiveHTMLDocument instruments the page for live editing using the existing HTMLInstrumentation mechanism, and additionally includes remote scripts provided by the protocol (LiveDevProtocolRemote), transport (NodeSocketTransportRemote), remote functions (RemoteFunctions) and document observation (DocumentObserver) which tracks related documents. The transport script includes the URL for the WebSocket server created when the transport is started after being set to the protocol layer.
 6. The instrumented page is sent back to StaticServer, which responds to the browser with the instrumented version. Other files requested by the browser are simply returned directly by StaticServer.
 7. As the browser loads the page, it encounters the injected scripts. The transport script connects back to the NodeSocketTransport's WebSocket server created in step 3 and sends it a "connect" message to tell it what URL has been loaded in the browser. The NodeSocketTransport assigns the socket a client id so it can keep track of which socket is associated with which page instance, then raises a "connect" event.
 8. LivDevProtocol receives the "connect" event and makes a note of the associated client ID updating the current active connections. LiveDevelopment also receives the "connect" event, it checks that the URL that comes on the message matches the current live doc instance and updates session status to STATUS_ACTIVE in case this is the first client connected.
@@ -81,3 +66,8 @@ After the live document is loaded in the browser, DocumentObserver scan related 
 * the "agents" are all gone - a lot of them were dead code anyway; other functionality was rolled into LiveDocument
 * communication is factored into transport and protocol layers (see above)
 * HTMLInstrumentation and HTMLSimpleDOM were modified slightly (which is why they're copied into the extension), to make it possible to inject the remote scripts and to fix an issue with re-instrumenting the HTML when a second browser connects to Live Development. The former change is harmless; the latter change would need some review or possibly more work in order to merge into master. 
+
+
+#### Unit tests
+
+We would definitely need a good suite of unit tests for the new functionality. There are just a few integration tests that were 'migrated' from the current suite of LiveDevelopment but, it would need more granular unit tests and be able to run them on multiple browsers.
